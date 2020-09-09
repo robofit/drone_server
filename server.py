@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 from websocket_server import WebsocketServer
 import sys, getopt
 
