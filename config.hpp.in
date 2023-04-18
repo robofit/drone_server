@@ -1,0 +1,9 @@
+#ifndef DDS_CONFIG_HPP
+#define DDS_CONFIG_HPP
+
+#cmakedefine COMPILE_WEBSOCKET
+#cmakedefine COMPILE_RTMP
+#cmakedefine COMPILE_RECORDER
+#cmakedefine COMPILE_VEHICLE_DETECTION
+
+#endif
