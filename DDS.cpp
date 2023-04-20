@@ -48,7 +48,7 @@ private:
 #endif
 
 #ifdef COMPILE_VEHICLE_DETECTION
-        media_manager::get().pipe(cid)->add_writer(std::make_shared<VehicleDetector>(websocket_server_p, "cars.xml"));
+//        media_manager::get().pipe(cid)->add_writer(std::make_shared<VehicleDetector>(websocket_server_p, "cars.xml"));
 #endif
     }
 };
