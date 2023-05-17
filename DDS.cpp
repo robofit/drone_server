@@ -25,6 +25,10 @@ extern "C"
 
 #endif
 
+#ifdef COMPILE_FLIGHT_DATABASE
+#include <DDS/flight_database/controller.hpp>
+#endif
+
 #ifdef COMPILE_VEHICLE_DETECTION
 #include <DDS/vehicle_detection/vehicle_detection.hpp>
 #endif
@@ -162,6 +166,13 @@ int main(int argc, char* argv[])
         ("rec_fps,rcf", po::value<int>(&sett.dint["record_fps"])->default_value(20), "record fps")
         ("rec_bitrate,rcbr", po::value<int>(&sett.dint["record_bitrate"])->default_value(3500), "record bitrate in kb/s")
         ("rec_f,r", po::value<bool>(&sett.dbool["record_force"])->default_value(false), "force stream recording")
+#endif
+
+#ifdef COMPILE_FLIGHT_DATABASE
+        ("fdb_h", po::value<std::string>(&sett.dstring["mariadb_hostname"])->default_value("localhost"), "mariadb host name")
+        ("fdb_u", po::value<std::string>(&sett.dstring["mariadb_username"])->default_value("root"), "mariadb user name")
+        ("fdb_p", po::value<std::string>(&sett.dstring["mariadb_password"])->default_value("root"), "mariadb password")
+        ("fdb_s", po::value<std::string>(&sett.dstring["mariadb_database"])->default_value("DDS"), "mariadb scheme/database")
 #endif
 
 #ifdef COMPILE_VEHICLE_DETECTION
