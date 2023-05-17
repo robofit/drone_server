@@ -1,6 +1,6 @@
 # DDS
 
-### Dependencies
+### Install dependencies
 * CMake >= 3.17
 * Boost
 * OpenSSL
