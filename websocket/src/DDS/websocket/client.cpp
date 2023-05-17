@@ -20,7 +20,7 @@ WebsocketClient::WebsocketClient(std::shared_ptr<FlightDataServer> s)
 
 WebsocketClient::~WebsocketClient()
 {
-    client_pool::get().del(shared_from_this());
+
 }
 
 void WebsocketClient::recv(std::string msg)

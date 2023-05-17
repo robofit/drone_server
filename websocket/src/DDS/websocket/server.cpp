@@ -1,5 +1,6 @@
 #include <DDS/websocket/server.hpp>
 #include <DDS/websocket/client.hpp>
+#include <DDS/core/client_pool.hpp>
 #include <DDS/core/flight_data/client.hpp>
 #include <DDS/core/logger.hpp>
 
@@ -79,7 +80,10 @@ void WebsocketServer::on_open(websocketpp::connection_hdl conn)
 void WebsocketServer::on_close(websocketpp::connection_hdl conn)
 {
     if (clients[conn])
+    {
+        client_pool::get().del(clients[conn]);
         clients.erase(conn);
+    }
 
     LOG(INFO) << "<websocket> " << "client disconnected";
 }
@@ -97,5 +101,8 @@ void WebsocketServer::on_fail(websocketpp::connection_hdl conn)
 {
     LOG(ERROR) << "<websocket> " << "connection failed";
     if (clients[conn])
+    {
+        client_pool::get().del(clients[conn]);
         clients.erase(conn);
+    }
 }
