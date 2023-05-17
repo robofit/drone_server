@@ -73,7 +73,7 @@ int flv_demuxer::decode(std::shared_ptr<media_packet> pkt_ptr)
     if (pkt_ptr->type_ != media_packet::Type::Video)
         return 0;
 
-    if (!media_manager::get().pipe(cid)->count())
+    if (!media_manager::get().pipe(cid)->count() && !pkt_ptr->seq_header_ && !pkt_ptr->key_frame_)
         return 0;
 
     int ret;
@@ -98,7 +98,10 @@ void flv_demuxer::on_decoded(AVFrame* frame)
 {
     auto pipe = media_manager::get().pipe(cid);
 
-    pipe->write_frame(frame);
+    if(frame->pts == 0 && frame->key_frame == 1 && frame->nb_side_data > 0)
+        pipe->write_header(frame);
+    else
+        pipe->write_frame(frame);
 }
 
 
