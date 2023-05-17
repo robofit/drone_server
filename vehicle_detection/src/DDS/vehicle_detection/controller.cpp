@@ -23,7 +23,8 @@ bool VehicleDetectionController::handle_string(const ClientID_t cid, std::string
                 { "data", bool(detectors.count(drone_id) > 0 && detectors[drone_id]->count(cid) > 0) }
             };
 
-            std::dynamic_pointer_cast<FlightDataClient>(cpool.client(cid))->send(j.dump());
+            if(cpool.count(cid))
+                std::dynamic_pointer_cast<FlightDataClient>(cpool.client(cid))->send(j.dump());
             return true;
         }
         else if(j["type"] == "vehicle_detection_set")
@@ -55,7 +56,8 @@ bool VehicleDetectionController::handle_string(const ClientID_t cid, std::string
                 { "data", nullptr }
             };
 
-            std::dynamic_pointer_cast<FlightDataClient>(cpool.client(cid))->send(j.dump());
+            if(cpool.count(cid))
+                std::dynamic_pointer_cast<FlightDataClient>(cpool.client(cid))->send(j.dump());
             return true;
         }
     }

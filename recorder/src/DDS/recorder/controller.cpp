@@ -25,7 +25,8 @@ bool RecorderController::handle_string(const ClientID_t cid, std::string const& 
                 { "data", bool(recorders.count(drone_id)) }
             };
 
-            std::dynamic_pointer_cast<FlightDataClient>(cpool.client(cid))->send(j.dump());
+            if(cpool.count(cid))
+                std::dynamic_pointer_cast<FlightDataClient>(cpool.client(cid))->send(j.dump());
             return true;
         }
         else if(j["type"] == "media_record_set")

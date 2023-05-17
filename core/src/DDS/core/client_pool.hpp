@@ -35,6 +35,7 @@ public:
 
     auto clients() const { return clients_; }
     auto drones() const { return drones_; }
+    auto count(ClientID_t id) const { return client_ids_.count(id); }
     std::shared_ptr<Client> client(ClientID_t id) const { return client_ids_.at(id); }
 private:
     client_pool() {}

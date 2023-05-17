@@ -107,13 +107,17 @@ void VehicleDetector::handle(ClientFramePacked cfp)
 
     auto msg = j.dump();
 
+    auto& cpool = client_pool::get();
     {
         std::lock_guard<std::mutex> lock(dstsm);
         for (auto c : dsts)
         {
-            auto fdc = std::dynamic_pointer_cast<FlightDataClient>(client_pool::get().client(c));
-            if(fdc)
-                fdc->send(msg);
+            if(cpool.count(c))
+            {
+                auto fdc = std::dynamic_pointer_cast<FlightDataClient>(cpool.client(c));
+                if(fdc)
+                    fdc->send(msg);
+            }
         }
     }
     

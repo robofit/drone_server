@@ -23,7 +23,8 @@ bool FlightDatabaseController::handle_string(const ClientID_t cid, std::string c
                 { "data", bool(fd_ptr) }
             };
 
-            std::dynamic_pointer_cast<FlightDataClient>(cpool.client(cid))->send(j.dump());
+            if(cpool.count(cid))
+                std::dynamic_pointer_cast<FlightDataClient>(cpool.client(cid))->send(j.dump());
             return true;
         }
         else if(j["type"] == "flight_data_save_set")
