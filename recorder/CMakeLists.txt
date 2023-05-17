@@ -3,6 +3,7 @@
 project (recorder)
 
 set(SOURCES
+    "src/${SOLUTION_NAME}/${PROJECT_NAME}/controller.cpp"
     "src/${SOLUTION_NAME}/${PROJECT_NAME}/recorder.cpp"
 )
 
@@ -27,6 +28,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 target_link_libraries(${PROJECT_NAME} PUBLIC
     DDS::core
+    DDS::websocket
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC
