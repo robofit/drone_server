@@ -28,6 +28,7 @@ public:
 
     void add(ClientID_t);
     void del(ClientID_t);
+    auto count(ClientID_t cid) const { return dsts.count(cid); }
 private:
     cv::CascadeClassifier* cascade_classifier;
     std::set<ClientID_t> dsts;

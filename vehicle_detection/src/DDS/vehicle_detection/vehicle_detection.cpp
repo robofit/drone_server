@@ -66,6 +66,12 @@ void VehicleDetector::write_frame(const ClientID_t cid, AVFrame* frame)
         return;
     last = now;
 
+    {
+        std::lock_guard<std::mutex> lock(dstsm);
+        if(dsts.empty())
+            return;
+    }
+
     add_job({cid, av_frame_clone(frame)});
 }
 
