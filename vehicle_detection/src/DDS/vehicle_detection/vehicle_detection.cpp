@@ -1,4 +1,6 @@
 #include <DDS/vehicle_detection/vehicle_detection.hpp>
+#include <DDS/core/client_pool.hpp>
+#include <DDS/core/flight_data/client.hpp>
 #include <DDS/websocket/json.hpp>
 
 #include <opencv2/objdetect.hpp>
@@ -12,8 +14,8 @@ extern "C"
 #include <libswscale/swscale.h>
 }
 
-VehicleDetector::VehicleDetector(std::shared_ptr<WebsocketServer> server_, std::string cascade_filepath)
-    : server(server_), cascade_classifier(new cv::CascadeClassifier(cascade_filepath))
+VehicleDetector::VehicleDetector(std::string cascade_filepath)
+    : cascade_classifier(new cv::CascadeClassifier(cascade_filepath))
 {
     nf = av_frame_alloc();
     last = std::chrono::steady_clock::now();
@@ -42,6 +44,18 @@ namespace cv
     }
 }
 
+void VehicleDetector::add(ClientID_t cid)
+{
+    std::lock_guard<std::mutex> lock(dstsm);
+    if(dsts.count(cid) == 0)
+        dsts.insert(cid);
+}
+void VehicleDetector::del(ClientID_t cid)
+{
+    std::lock_guard<std::mutex> lock(dstsm);
+    dsts.erase(cid);
+}
+
 
 void VehicleDetector::write_frame(const ClientID_t cid, AVFrame* frame)
 {
@@ -52,7 +66,7 @@ void VehicleDetector::write_frame(const ClientID_t cid, AVFrame* frame)
         return;
     last = now;
 
-    add({cid, av_frame_clone(frame)});
+    add_job({cid, av_frame_clone(frame)});
 }
 
 void VehicleDetector::handle(ClientFramePacked cfp)
@@ -84,7 +98,19 @@ void VehicleDetector::handle(ClientFramePacked cfp)
             }
         }
     };
-    server->broadcast(j.dump());
+
+    auto msg = j.dump();
+
+    {
+        std::lock_guard<std::mutex> lock(dstsm);
+        for (auto c : dsts)
+        {
+            auto fdc = std::dynamic_pointer_cast<FlightDataClient>(client_pool::get().client(c));
+            if(fdc)
+                fdc->send(msg);
+        }
+    }
+    
 
     av_frame_free(&frame);
 }

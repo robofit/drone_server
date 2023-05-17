@@ -1,10 +1,9 @@
 #include <DDS/websocket/server.hpp>
 #include <DDS/websocket/client.hpp>
+#include <DDS/core/flight_data/client.hpp>
 #include <DDS/core/logger.hpp>
 
 #include <functional>
-#include <memory>
-
 
 WebsocketServer::WebsocketServer(boost::asio::io_context* io)
 {
@@ -18,10 +17,8 @@ WebsocketServer::~WebsocketServer()
     server.stop_listening();
     for (auto& c : clients)
     {
-        //server.close(c.first, websocketpp::close::status::normal, "finished");//could be dangerous - dont send close
-        delete c.second;
+        //server.close(c.first, websocketpp::close::status::normal, "finished");//could be dangerous on SIGINT - dont send close
     }
-    clients.clear();
 }
 
 void WebsocketServer::run(uint16_t port)
@@ -39,7 +36,7 @@ void WebsocketServer::run(uint16_t port)
     LOG(INFO) << "<websocket> " << "starting server on port: " << port;
 }
 
-void WebsocketServer::send(FlightDataClient* dst, const std::string& msg)
+void WebsocketServer::send(std::shared_ptr<Client> dst, const std::string& msg)
 {
     for (auto& c : clients)
     {
@@ -52,60 +49,14 @@ void WebsocketServer::send(FlightDataClient* dst, const std::string& msg)
             catch (websocketpp::exception const& e)
             {
                 LOG(ERROR) << "<websocket> " << e.what();
-                if (clients[c.first])
-                {
-                    delete clients[c.first];
-                    clients.erase(c.first);
-                }
+                kick(dst, websocketpp::close::status::bad_gateway, e.what());
             }
         }
     }
 }
 
-void WebsocketServer::broadcast(FlightDataClient* src, const std::string& msg)
-{
-    for (auto& c : clients)
-    {
-        if (c.second != src)
-        {
-            try
-            {
-                server.send(c.first, msg, websocketpp::frame::opcode::TEXT);
-            }
-            catch (websocketpp::exception const& e)
-            {
-                LOG(ERROR) << "<websocket> " << e.what();
-                if (clients[c.first])
-                {
-                    delete clients[c.first];
-                    clients.erase(c.first);
-                }
-            }
-        }
-    }
-}
 
-void WebsocketServer::broadcast(const std::string& msg)
-{
-    for (auto& c : clients)
-    {
-        try
-        {
-            server.send(c.first, msg, websocketpp::frame::opcode::TEXT);
-        }
-        catch (websocketpp::exception const& e)
-        {
-            LOG(ERROR) << "<websocket> " << e.what();
-            if (clients[c.first])
-            {
-                delete clients[c.first];
-                clients.erase(c.first);
-            }
-        }
-    }
-}
-
-void WebsocketServer::kick(FlightDataClient* dst, websocketpp::close::status::value status, std::string reason)
+void WebsocketServer::kick(std::shared_ptr<Client> dst, websocketpp::close::status::value status, std::string reason)
 {
     for (auto& c : clients)
     {
@@ -119,22 +70,17 @@ void WebsocketServer::kick(FlightDataClient* dst, websocketpp::close::status::va
 void WebsocketServer::on_open(websocketpp::connection_hdl conn)
 {
     if (clients[conn])
-    {
-        delete clients[conn];
         clients.erase(conn);
-    }
 
     LOG(INFO) << "<websocket> " << "new client connected";
-    clients[conn] = new WebsocketClient(shared_from_this());
+    clients[conn] = std::make_shared<WebsocketClient>(shared_from_this());
 }
 
 void WebsocketServer::on_close(websocketpp::connection_hdl conn)
 {
     if (clients[conn])
-    {
-        delete clients[conn];
         clients.erase(conn);
-    }
+
     LOG(INFO) << "<websocket> " << "client disconnected";
 }
 
@@ -143,7 +89,7 @@ void WebsocketServer::on_message(websocketpp::connection_hdl conn, server_t::mes
     if (clients[conn])
     {
         LOG(DEBUG) << "<websocket> " << "data income: " << msg->get_payload();
-        clients[conn]->recv(msg->get_payload());
+        std::dynamic_pointer_cast<FlightDataClient>(clients[conn])->recv(msg->get_payload());
     }
 }
 
@@ -151,8 +97,5 @@ void WebsocketServer::on_fail(websocketpp::connection_hdl conn)
 {
     LOG(ERROR) << "<websocket> " << "connection failed";
     if (clients[conn])
-    {
-        delete clients[conn];
         clients.erase(conn);
-    }
 }

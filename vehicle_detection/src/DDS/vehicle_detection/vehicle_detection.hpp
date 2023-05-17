@@ -1,11 +1,11 @@
 #ifndef VEHICLE_DETECTION_HPP
 #define VEHICLE_DETECTION_HPP
 
+#include <set>
 #include <string>
 #include <chrono>
 #include <DDS/core/media/avframe_writer.hpp>
 #include <DDS/core/async_handler.hpp>
-#include <DDS/websocket/server.hpp>
 
 struct ClientFramePacked
 {
@@ -21,13 +21,17 @@ class SwsContext;
 class VehicleDetector : public AVFrameWriter, async_handler<ClientFramePacked>
 {
 public:
-    VehicleDetector(std::shared_ptr<WebsocketServer>, std::string cascade_filepath);
+    VehicleDetector(std::string cascade_filepath);
     ~VehicleDetector();
 
     void write_frame(const ClientID_t, AVFrame*);
+
+    void add(ClientID_t);
+    void del(ClientID_t);
 private:
-    std::shared_ptr<WebsocketServer> server;
     cv::CascadeClassifier* cascade_classifier;
+    std::set<ClientID_t> dsts;
+    std::mutex dstsm;
 
     AVFrame* nf = nullptr;
     SwsContext* swsctx = nullptr;

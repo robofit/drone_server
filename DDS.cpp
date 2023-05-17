@@ -43,12 +43,13 @@ private:
     {
         auto& sett = settings::get();
 #ifdef COMPILE_RECORDER
-        if(sett.dint["record_force"])
+        if(sett.dbool["record_force"])
             media_manager::get().pipe(cid)->add_writer(std::make_shared<media_recorder>(cid_to_hex(cid) + ".mp4"));
 #endif
 
 #ifdef COMPILE_VEHICLE_DETECTION
-        media_manager::get().pipe(cid)->add_writer(std::make_shared<VehicleDetector>(websocket_server_p, "cars.xml"));
+        if(sett.dbool["vehicle_detection_force"])
+            media_manager::get().pipe(cid)->add_writer(std::make_shared<VehicleDetector>(sett.dstring["vehicle_detection_filepath"]));
 #endif
     }
 };
@@ -160,7 +161,12 @@ int main(int argc, char* argv[])
         ("rec_height,rch", po::value<int>(&sett.dint["record_height"])->default_value(1080), "record height")
         ("rec_fps,rcf", po::value<int>(&sett.dint["record_fps"])->default_value(20), "record fps")
         ("rec_bitrate,rcbr", po::value<int>(&sett.dint["record_bitrate"])->default_value(3500), "record bitrate in kb/s")
-        ("rec_f,r", po::value<int>(&sett.dint["record_force"])->default_value(0), "force stream recording")
+        ("rec_f,r", po::value<bool>(&sett.dbool["record_force"])->default_value(false), "force stream recording")
+#endif
+
+#ifdef COMPILE_VEHICLE_DETECTION
+        ("vdet_fp", po::value<std::string>(&sett.dstring["vehicle_detection_filepath"])->default_value("cars.xml"), "vehicle detection cascade file path")
+        ("vdet_f,d", po::value<bool>(&sett.dbool["vehicle_detection_force"])->default_value(false), "force vehicle detection")
 #endif
     ;
 

@@ -28,7 +28,7 @@ public:
         stop();
         delete handler;
     }
-    void add(T j)
+    void add_job(T j)
     {
         std::unique_lock<std::mutex> lock(msg_qm);
         msg_q.push(j);

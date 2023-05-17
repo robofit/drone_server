@@ -3,6 +3,7 @@
 project (vehicle_detection)
 
 set(SOURCES
+    "src/${SOLUTION_NAME}/${PROJECT_NAME}/controller.cpp"
     "src/${SOLUTION_NAME}/${PROJECT_NAME}/vehicle_detection.cpp"
 )
 

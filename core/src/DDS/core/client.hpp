@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <iomanip>
+#include <memory>
 
 typedef uint32_t ClientID_t;
 
@@ -20,10 +21,11 @@ std::string cid_to_hex(ClientID_t cid)
 	return os.str();
 }
 
-class Client
+class Client : public std::enable_shared_from_this<Client>
 {
 public:
-	virtual ~Client() {}
+	Client();
+	virtual ~Client() = default;
 
 	enum class Type
 	{
@@ -31,7 +33,8 @@ public:
 		DRONE,
 		OPERATOR
 	} type = Type::INVALID;
-	ClientID_t id;
+
+	const ClientID_t id;
 	std::string drone_name, serial;
 };
 

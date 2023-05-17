@@ -3,13 +3,12 @@
 project (core)
 
 set(SOURCES
+    "src/${SOLUTION_NAME}/${PROJECT_NAME}/client.cpp"
     "src/${SOLUTION_NAME}/${PROJECT_NAME}/settings.cpp"
 
     "src/${SOLUTION_NAME}/${PROJECT_NAME}/media/encoder.cpp"
     "src/${SOLUTION_NAME}/${PROJECT_NAME}/media/decoder.cpp"
     "src/${SOLUTION_NAME}/${PROJECT_NAME}/media/copypipe.cpp"
-
-    "src/${SOLUTION_NAME}/${PROJECT_NAME}/flight_data/client.cpp"
 )
 
 set(INCLUDES
