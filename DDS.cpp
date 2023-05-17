@@ -1,5 +1,9 @@
 #include <iostream>
 #include <exception>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
 
 #include <boost/asio.hpp>
 #include <boost/exception/all.hpp>
@@ -8,7 +12,9 @@
 #include <DDS/config.hpp>
 #include <DDS/core/logger.hpp>
 #include <DDS/core/settings.hpp>
+#include <DDS/core/client_pool.hpp>
 #include <DDS/core/media/manager.hpp>
+#include <DDS/core/flight_data/manager.hpp>
 
 #ifdef COMPILE_WEBSOCKET
 #include <DDS/websocket/server.hpp>
@@ -16,7 +22,7 @@ std::shared_ptr<WebsocketServer> websocket_server_p;
 #endif
 
 #ifdef COMPILE_RECORDER
-#include <DDS/recorder/recorder.hpp>
+#include <DDS/recorder/controller.hpp>
 
 extern "C"
 {
@@ -25,8 +31,12 @@ extern "C"
 
 #endif
 
+#ifdef COMPILE_FLIGHT_DATABASE
+#include <DDS/flight_database/controller.hpp>
+#endif
+
 #ifdef COMPILE_VEHICLE_DETECTION
-#include <DDS/vehicle_detection/vehicle_detection.hpp>
+#include <DDS/vehicle_detection/controller.hpp>
 #endif
 
 #ifdef COMPILE_RTMP
@@ -43,12 +53,18 @@ private:
     {
         auto& sett = settings::get();
 #ifdef COMPILE_RECORDER
-        if(sett.dint["record_force"])
-            media_manager::get().pipe(cid)->add_writer(std::make_shared<media_recorder>(cid_to_hex(cid) + ".mp4"));
-#endif
+        if(sett.dbool["record_force"])
+        {
+            auto curr_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
 
-#ifdef COMPILE_VEHICLE_DETECTION
-//        media_manager::get().pipe(cid)->add_writer(std::make_shared<VehicleDetector>(websocket_server_p, "cars.xml"));
+            std::ostringstream oss;
+            oss << std::put_time(std::localtime(&curr_time), "%Y%m%d-%H%M%S");
+            oss << "-";
+            oss << cid_to_hex(cid);
+            oss << ".mp4";
+
+            media_manager::get().pipe(cid)->add_writer(std::make_shared<media_recorder>(oss.str()));
+        }
 #endif
     }
 };
@@ -60,6 +76,7 @@ std::shared_ptr<tcp_server<my_rtmp_session>> rtmp_server_p;
 int run()
 {
     auto& sett = settings::get();
+    auto& fdm = flight_data_manager::get();
 
     boost::asio::io_context io_context;
     boost::asio::signal_set signals(io_context, SIGINT, SIGTERM);
@@ -77,6 +94,17 @@ int run()
         io_context.stop();
     });
 
+#ifdef COMPILE_RECORDER
+    fdm.add(std::make_shared<RecorderController>());
+#endif
+
+#ifdef COMPILE_FLIGHT_DATABASE
+    fdm.add(std::make_shared<FlightDatabaseController>());
+#endif
+
+#ifdef COMPILE_VEHICLE_DETECTION
+    fdm.add(std::make_shared<VehicleDetectionController>());
+#endif
 
 #ifdef COMPILE_WEBSOCKET
     try
@@ -129,8 +157,6 @@ int run()
         return -1;
     }
 
-    media_manager::get().clear();
-
     return 0;
 }
 
@@ -160,7 +186,18 @@ int main(int argc, char* argv[])
         ("rec_height,rch", po::value<int>(&sett.dint["record_height"])->default_value(1080), "record height")
         ("rec_fps,rcf", po::value<int>(&sett.dint["record_fps"])->default_value(20), "record fps")
         ("rec_bitrate,rcbr", po::value<int>(&sett.dint["record_bitrate"])->default_value(3500), "record bitrate in kb/s")
-        ("rec_f,r", po::value<int>(&sett.dint["record_force"])->default_value(0), "force stream recording")
+        ("rec_f,r", po::value<bool>(&sett.dbool["record_force"])->default_value(false), "force stream recording")
+#endif
+
+#ifdef COMPILE_FLIGHT_DATABASE
+        ("fdb_h", po::value<std::string>(&sett.dstring["mariadb_hostname"])->default_value("localhost"), "mariadb host name")
+        ("fdb_u", po::value<std::string>(&sett.dstring["mariadb_username"])->default_value("root"), "mariadb user name")
+        ("fdb_p", po::value<std::string>(&sett.dstring["mariadb_password"])->default_value("root"), "mariadb password")
+        ("fdb_s", po::value<std::string>(&sett.dstring["mariadb_database"])->default_value("DDS"), "mariadb scheme/database")
+#endif
+
+#ifdef COMPILE_VEHICLE_DETECTION
+        ("vdet_fp", po::value<std::string>(&sett.dstring["vehicle_detection_filepath"])->default_value("cars.xml"), "vehicle detection cascade file path")
 #endif
     ;
 

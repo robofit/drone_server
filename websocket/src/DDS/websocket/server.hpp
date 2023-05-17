@@ -6,8 +6,8 @@
 #include <websocketpp/server.hpp>
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <DDS/core/flight_data/server.hpp>
+#include <DDS/core/flight_data/client.hpp>
 
-class Client;
 class WebsocketServer : public FlightDataServer
 {
 	using server_t = websocketpp::server<websocketpp::config::asio>;
@@ -16,14 +16,12 @@ public:
 	~WebsocketServer();
 
 	void run(uint16_t);
-	void send(FlightDataClient*, const std::string& msg);
-	void broadcast(FlightDataClient*, const std::string& msg);
-	void broadcast(const std::string& msg);
-	void kick(FlightDataClient*, websocketpp::close::status::value, std::string reason);
+	void send(std::shared_ptr<Client>, const std::string& msg);
+	void kick(std::shared_ptr<Client>, websocketpp::close::status::value, std::string reason);
 private:
 	server_t server;
 
-	std::map<websocketpp::connection_hdl, FlightDataClient*, std::owner_less<websocketpp::connection_hdl>> clients;
+	std::map<websocketpp::connection_hdl, std::shared_ptr<FlightDataClient>, std::owner_less<websocketpp::connection_hdl>> clients;
 
 	void on_open(websocketpp::connection_hdl);
 	void on_close(websocketpp::connection_hdl);

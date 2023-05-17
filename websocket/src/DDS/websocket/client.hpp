@@ -4,20 +4,23 @@
 #include <string>
 #include <DDS/core/async_handler.hpp>
 #include <DDS/core/flight_data/client.hpp>
+#include <DDS/core/flight_data/server.hpp>
 
-class FlightDataServer;
 class WebsocketClient : public FlightDataClient, async_handler<std::string>
 {
 public:
     WebsocketClient(std::shared_ptr<FlightDataServer>);
-    ~WebsocketClient() {}
+    ~WebsocketClient();
     void recv(std::string);
+    void send(std::string const&);
 private:
     void handle(std::string);
 
-	void on_hello(ClientID_t);
-	void on_data();
-	void on_drone_list(std::vector<Client*>&);
+	void on_hello();
+	void on_data(std::string const&);
+	void on_drone_list();
+
+    bool handshake_done = false;
 };
 
 #endif

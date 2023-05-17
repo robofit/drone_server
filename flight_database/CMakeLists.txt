@@ -1,10 +1,10 @@
 ﻿cmake_minimum_required (VERSION 3.11)
 
-project (recorder)
+project (flight_database)
 
 set(SOURCES
     "src/${SOLUTION_NAME}/${PROJECT_NAME}/controller.cpp"
-    "src/${SOLUTION_NAME}/${PROJECT_NAME}/recorder.cpp"
+    "src/${SOLUTION_NAME}/${PROJECT_NAME}/flight_database.cpp"
 )
 
 set(INCLUDES
@@ -12,6 +12,7 @@ set(INCLUDES
 )
 
 # Packages
+find_package(mariadbclientpp)
 ##
 
 
@@ -29,6 +30,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 target_link_libraries(${PROJECT_NAME} PUBLIC
     DDS::core
     DDS::websocket
+)
+
+target_link_libraries(${PROJECT_NAME} PRIVATE
+    mariadbclientpp::mariadbclientpp
 )
 
 target_include_directories(${PROJECT_NAME} PUBLIC

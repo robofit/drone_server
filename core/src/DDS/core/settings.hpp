@@ -18,6 +18,8 @@ public:
 	void set_loglevel(int);
 
 	std::map<std::string, int> dint;
+	std::map<std::string, bool> dbool;
+	std::map<std::string, std::string> dstring;
 private:
 	settings();
 };

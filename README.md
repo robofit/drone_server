@@ -4,21 +4,17 @@
 * CMake >= 3.17
 * Boost
 * OpenSSL
+* OpenCV2 (libopencv)
 ```
-$ sudo apt-get install make cmake yasm nasm pkg-config libssl-dev libboost-all-dev libx264-dev libavdevice-dev g++
+$ sudo apt-get install make cmake yasm nasm pkg-config libssl-dev libboost-all-dev libx264-dev libavdevice-dev g++ libopencv-dev
 ```
 
-* [FFMPEG](https://git.ffmpeg.org/ffmpeg.git) build 5.1 or later with at least libx264 enabled
+* [FFMPEG](https://git.ffmpeg.org/ffmpeg.git) build with at least libx264 enabled
 
   * Working solution is to build from source. Follow the official [guide](https://trac.ffmpeg.org/wiki/CompilationGuide/Ubuntu).
   * Configure ffmpeg with:
   
      ``` $ ./configure  --ld="g++" --enable-gpl --disable-programs --disable-static --enable-shared --enable-libx264```
-
-* libopencv
-```
-$ sudo apt install libopencv-dev
-```
 
 * [websocketpp](https://github.com/zaphoyd/websocketpp)
 ```
@@ -29,6 +25,19 @@ $ cd build
 $ cmake ..
 $ sudo make install
 ```
+
+* [mariadb++](https://github.com/viaduck/mariadbpp)
+```
+$ sudo apt-get install libmariadb-dev
+$ git clone git@github.com:viaduck/mariadbpp.git
+$ cd mariadbpp
+$ git submodule update --init
+$ mkdir build
+$ cd build
+$ cmake ..
+$ sudo make install
+```
+
 
 ### Building
 ```
