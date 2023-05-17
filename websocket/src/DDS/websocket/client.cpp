@@ -58,13 +58,15 @@ void WebsocketClient::handle(std::string msg)
         }
         else if(j["type"] == "data_broadcast" && handshake_done)
         {
-            on_data(j.dump());
+            auto str = j.dump();
+            flight_data_manager::get().handle(id, str);
+            on_data(str);
         }
         else if(j["type"] == "drone_list" && handshake_done)
         {
             on_drone_list();
         }
-        else if(flight_data_manager::get().handle(msg))
+        else if(flight_data_manager::get().handle(id, msg))
         {
             
         }

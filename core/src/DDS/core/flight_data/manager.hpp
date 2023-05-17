@@ -1,7 +1,7 @@
 #ifndef FLIGHT_DATA_MANAGER_HPP
 #define FLIGHT_DATA_MANAGER_HPP
 
-#include <map>
+#include <set>
 #include <DDS/core/flight_data/string_handler.hpp>
 
 class flight_data_manager
@@ -15,26 +15,31 @@ public:
         return instance;
     }
 
-    bool handle(std::string const& msg) const
+    bool handle(const ClientID_t cid, std::string const& msg) const
     {
         bool ret = false;
-        for(auto& pair : recs)
+        for(auto& sh_ptr : recs)
         {
-            ret |= pair.second->handle_string(pair.first, msg);
+            ret |= sh_ptr->handle_string(cid, msg);
         }
         return ret;
     }
 
-    void add(const ClientID_t cid, std::shared_ptr<StringHandler> sh_ptr)
+    void add(std::shared_ptr<StringHandler> sh_ptr)
     {
-        recs[cid] = sh_ptr;
+        recs.insert(sh_ptr);
     }
-    void del(const ClientID_t cid)
+    void del(std::shared_ptr<StringHandler> sh_ptr)
     {
-        recs.erase(cid);
+        if(recs.count(sh_ptr) > 0)
+            recs.erase(sh_ptr);
+    }
+    void clear()
+    {
+        recs.clear();
     }
 private:
-    std::map<ClientID_t, std::shared_ptr<StringHandler>> recs;
+    std::set<std::shared_ptr<StringHandler>> recs;
     flight_data_manager() {}
 };
 
