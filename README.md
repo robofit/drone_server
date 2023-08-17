@@ -41,6 +41,8 @@ $ sudo make install
 
 ### Building
 ```
+$ git clone git@github.com:robofit/drone_server.git
+$ cd drone_server
 $ mkdir build
 $ cd build
 $ cmake ..
