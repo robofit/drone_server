@@ -1,0 +1,9 @@
+version: '3'
+services:
+  droco_server:
+    image: droco2/droco_server:0.1.0
+    container_name: droco_server
+    ports:
+      - "5555:5555"
+      - "1935:1935"
+    command: -l 1
