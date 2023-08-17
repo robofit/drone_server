@@ -12,6 +12,7 @@ _deps
 
 .build
 .install
+build/
 
 # Prerequisites
 *.d
