@@ -1,5 +1,12 @@
 # DDS
+## Run using Docker
+```
+$ git clone git@github.com:robofit/drone_server.git
+$ cd drone_server/compose_files
+$ docker-compose up
+```
 
+## Build from scratch
 ### Install dependencies
 * CMake >= 3.17
 * Boost
@@ -42,7 +49,7 @@ $ sudo make install
 ### Building
 ```
 $ git clone git@github.com:robofit/drone_server.git
-$ cd drone_server
+$ cd drone_server/src
 $ mkdir build
 $ cd build
 $ cmake ..
