@@ -6,23 +6,26 @@ import os
 import websocket
 import _thread
 import time
+import subprocess
+import shlex
 
 filename = ""
 drone_type = ""
 drone_serial = ""
 
 def on_message(ws, message):
-    print("message arrived: " + message)
+    #print("message arrived: " + message)
     msg = json.loads(message)
     client_id = msg["data"]["client_id"]
     if msg["type"] == "hello_resp":
         def run(*args):
+            subprocess.Popen(shlex.split('ffmpeg -readrate 1.07 -i ./flightVideos/' + drone_type + '.MP4 -c:v libx264 -f flv rtmp://localhost:1935/live/' + client_id))
             file = open(filename, "r")
             for line in file:
                 j_line = json.loads(line)
                 j_line["client_id"] = client_id
                 adjusted_line = json.dumps({"type":"data_broadcast", "data":j_line})
-                print(adjusted_line)
+                #print(adjusted_line)
                 ws.send(adjusted_line)
                 time.sleep(0.1)
             time.sleep(1)
@@ -63,7 +66,7 @@ def main(argv):
         sys.exit(2)
 
     #websocket.enableTrace(True)
-    ws = websocket.WebSocketApp("ws://butcluster.ddns.net:5555",
+    ws = websocket.WebSocketApp("ws://localhost:5555",
                               on_message = on_message,
                               on_error = on_error,
                               on_close = on_close)
